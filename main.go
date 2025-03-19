@@ -10,41 +10,42 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-// Function to open the toolbox of URLs
-func openToolbox(a fyne.App) {
+// This function will start the toolbox of URLs
+func openToolbox() fyne.CanvasObject {
 	// Create URL objects for different services
 	confluenceURL, err := url.Parse("https://confluence.storage.hpecorp.net/display/NCS/DSCC")
 
 	if err != nil {
 		log.Println(err)
-		return
+		return nil
 	}
 
 	grafanaURL, err := url.Parse("https://fleetpoc2-us-west-2.cloudops.qa.cds.hpe.com/grafana/d/uid_search_data_processor/search-data-processor?orgId=1")
 
 	if err != nil {
 		log.Println(err)
-		return
+		return nil
 	}
 
 	humioURL, err := url.Parse("https://fleetpoc2-us-west-2.cloudops.qa.cds.hpe.com/logs/storagecentral/search")
+
 	if err != nil {
 		log.Println(err)
-		return
+		return nil
 	}
 
 	pavoURL, err := url.Parse("https://console-neonops3-app.qa.cds.hpe.com/")
 
 	if err != nil {
 		log.Println(err)
-		return
+		return nil
 	}
 
-	// Create the content for the toolbox
+	// Create content for the toolbox
 	hello := widget.NewLabel("Welcome to the toolbox!")
 
-	toolboxWindow := a.NewWindow("Toolbox of Handy URLs")
-	toolboxWindow.SetContent(container.NewVBox(
+	// Create the toolbox content
+	toolboxContent := container.NewVBox(
 		hello,
 		widget.NewButton("Hi!", func() {
 			hello.SetText("Welcome to the handy links!")
@@ -53,10 +54,9 @@ func openToolbox(a fyne.App) {
 		widget.NewHyperlink("Grafana", grafanaURL),
 		widget.NewHyperlink("Humio", humioURL),
 		widget.NewHyperlink("Pavo / Aquilla", pavoURL),
-	))
+	)
 
-	toolboxWindow.Resize(fyne.NewSize(400, 300)) // Resize for better appearance
-	toolboxWindow.Show()
+	return toolboxContent
 }
 
 func main() {
@@ -108,19 +108,14 @@ func main() {
 		},
 	)
 
-	// Add padding to the top panel for more height
-	topPanel := container.NewVBox(
-		regionSelector,
-		selectedLabel,
+	// Create a tab container
+	tabs := container.NewAppTabs(
+		container.NewTabItem("Fleet Management", container.NewVBox(regionSelector, selectedLabel, table)),
+		container.NewTabItem("Toolbox", openToolbox()), // Open Toolbox in the second tab
 	)
 
-	// Button to open the toolbox of URLs
-	openToolboxButton := widget.NewButton("Open Toolbox", func() {
-		openToolbox(myApp)
-	})
-
-	// Add components to the main window
-	myWindow.SetContent(container.NewVBox(topPanel, table, openToolboxButton))
+	// Set the content of the window
+	myWindow.SetContent(tabs)
 	myWindow.Resize(fyne.NewSize(800, 600)) // Resize the window to make sure it's big enough for the table
 
 	// Show the window
